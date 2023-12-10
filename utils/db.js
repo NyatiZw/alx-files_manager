@@ -50,4 +50,4 @@ class DBClient {
 }
 
 
-module.exports = dbClient;
+module.exports = dbClient();
