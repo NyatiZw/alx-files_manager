@@ -1,47 +1,36 @@
-const { MongoClient } = require('mongodb');
+const User = require('../models/User');
 const crypto = require('crypto');
 
-class UserController {
-  static async postNew(req, res) {
-    const { email, password } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: 'Missing email' });
-    }
+module.exports = {
+	postNew: async (req, res) => {
+		try {
+			const { email, password } = req.body;
 
-    if (!password) {
-      return res.status(400).json({ error: 'Missing password' });
-    }
+			if (!email) {
+				return res.status(400).json({ error: 'Missing email' });
+			}
 
-    const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
+			if (!password) {
+				return res.status(400).json({ error: 'Missing password' });
+			}
 
-    const client = new MongoClient(process.env.DB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+			const existingUser = await User.findOne({ email });
+			if (existingUser) {
+				return res.status(400).json({ error: 'Already exists' });
+			}
 
-    try {
-      await client.connect();
+			const newUser = new User({
+				email,
+				password: hashedPassword,
+			});
 
-      const existingUser = await client.db(process.env.DB_DATABASE).collection('users').findOne({ email });
-      if (existingUser) {
-        return res.status(400).json({ error: 'Already exists' });
-      }
+			await newUser.save();
 
-      const result = await client.db(process.env.DB_DATABASE).collection('users').insertOne({
-        email,
-        password: hashedPassword,
-      });
-
-      const newUser = {
-        id: result.insertedId,
-        email,
-      };
-
-      return res.status(201).json(newUser);
-    } catch (error) {
-      console.error(`Error creating user: ${error.message}`);
-      return res.status(500).json({ error: 'Internal Server Error' });
-    } finally {
-      await client.close();
-    }
-  }
-}
-
-module.exports = UserController;
+			const responseUser = { email: newUser.email, id: newUser._id };
+			return res.status(201).json(responseUser);
+		} catch (error) {
+			console.error(error);
+			return res.status(500).json({ error: 'Internal Server Error' });
+		}
+	},
+};
