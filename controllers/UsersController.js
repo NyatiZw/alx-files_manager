@@ -1,33 +1,29 @@
-const User = require('../models/User');
-const crypto = require('crypto');
+const redisClient = require('../redisClient');
+const User = require('../models(User');
 
 module.exports = {
-	postNew: async (req, res) => {
+	getMe: async (req, res) => {
 		try {
-			const { email, password } = req.body;
+			const token = req.headers['x-token'];
 
-			if (!email) {
-				return res.status(400).json({ error: 'Missing email' });
+			if (!token) {
+				return res.status(401).json({ error: 'Unauthorized' });
 			}
 
-			if (!password) {
-				return res.status(400).json({ error: 'Missing password' });
+			const key = `auth_${token}`;
+			const userId = await redisClient.get(key);
+
+			if (!userId) {
+				return res.status(401).json({ error: 'Unauthorized' });
 			}
 
-			const existingUser = await User.findOne({ email });
-			if (existingUser) {
-				return res.status(400).json({ error: 'Already exists' });
+			const user = await User.findById(userId, { email: 1, _id: 1 });
+
+			if (!user) {
+				return res.status(401).json({ error: 'Unauthorized' });
 			}
 
-			const newUser = new User({
-				email,
-				password: hashedPassword,
-			});
-
-			await newUser.save();
-
-			const responseUser = { email: newUser.email, id: newUser._id };
-			return res.status(201).json(responseUser);
+			return res.json(user);
 		} catch (error) {
 			console.error(error);
 			return res.status(500).json({ error: 'Internal Server Error' });
