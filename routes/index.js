@@ -2,7 +2,7 @@ import express from 'express';
 import AppController from '../controllers/AppController';
 import UsersController from '../controllers/UsersController';
 import AuthController from '../contollers/AuthController';
-import FilesController from '../controllers/FileController';
+import FilesController from '../controllers/FilesController';
 
 function controllerRouting(app) {
 	const router = express.Router();
