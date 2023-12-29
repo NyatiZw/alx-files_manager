@@ -36,7 +36,7 @@ class AuthController {
 	}
 
 	static async getDisconnect(request, response) {
-		const { userId, key } + await userUtils.getUserIdAndKey(request);
+		const { userId, key } = await userUtils.getUserIdAndKey(request);
 
 		if (!userId) return response.status(401).send({ error: 'Unauthorized' });
 
