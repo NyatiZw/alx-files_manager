@@ -11,4 +11,4 @@ const basicUtils = {
 	},
 };
 
-export default basicUtilis;
+export default basicUtils;
