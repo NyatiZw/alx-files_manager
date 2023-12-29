@@ -8,7 +8,7 @@ const userQueue = new Queue('userQueue');
 
 class UserController {
 	static async postNew(req, res) {
-		const { email, password } = request.body;
+		const { email, password } = req.body;
 
 		if (!email) return res.status(400).send({ error: 'Missing email' });
 
@@ -43,18 +43,18 @@ class UserController {
 		return res.status(201).send(user);
 	}
 
-	static async.getMe(req, res) {
+	static async getMe(req, res) {
 		const { userId } = await userUtils.getUserIdAndKey(req);
 
-		cost user = await userUtils.getUser({
+		const user = await userUtils.getUser({
 			_id: ObjectId(userId),
 		});
 
 		if (!user) return res.status(401).send({ error: 'Unauthorized' });
 
-		const processedUser = { id: user._id, ..user };
+		const processedUser = { id: user._id, ...user };
 		delete processedUser._id;
-		delet processedUser.password;
+		delete processedUser.password;
 
 		return res.status(200).send(processedUser);
 	}
