@@ -16,7 +16,7 @@ function controllerRouting(app) {
 	});
 
 	// should return the number of users and files in db
-	router.get('/status', (req, res) => {
+	router.get('/stats', (req, res) => {
 		AppController.getStats(req, res);
 	});
 
@@ -24,6 +24,11 @@ function controllerRouting(app) {
 
 	// should create a new user in db
 	router.post('/users', (req, res) => {
+		UsersController.postNew(req, res);
+	});
+
+	// should retrieve user based on token
+	router.get('/users/me', (req, res) => {
 		UsersController.getMe(req, res);
 	});
 
@@ -47,7 +52,7 @@ function controllerRouting(app) {
 	});
 
 	// should retrieve the file based oon id
-	router.get('files/:id', (req, res) => {
+	router.get('/files/:id', (req, res) => {
 		FilesController.getShow(req, res);
 	});
 
