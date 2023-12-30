@@ -7,16 +7,16 @@ import userUtils from '../utils/user';
 const userQueue = new Queue('userQueue');
 
 class UsersController {
-	static async postNew(req, res) {
-		const { email, password } = req.body;
+	static async postNew(request, response) {
+		const { email, password } = request.body;
 
-		if (!email) return res.status(400).send({ error: 'Missing email' });
+		if (!email) return response.status(400).send({ error: 'Missing email' });
 
-		if (!password) { return res.status(400).send({ error: 'Missing password' }); }
+		if (!password) { return response.status(400).send({ error: 'Missing password' }); }
 
 		const emailExists = await dbClient.usersCollection.findOne({ email });
 
-		if (emailExists) { return res.status(400).send({ error: 'Already exists' }); }
+		if (emailExists) { return response.status(400).send({ error: 'Already exists' }); }
 
 		const sha1Password = sha1(password);
 
@@ -28,7 +28,7 @@ class UsersController {
 			});
 		} catch (err) {
 			await userQueue.add({});
-			return res.status(500).send({ error: 'Error creating user.' });
+			return response.status(500).send({ error: 'Error creating user.' });
 		}
 
 		const user = {
@@ -40,23 +40,23 @@ class UsersController {
 			userId: result.insertedId.toString(),
 		});
 
-		return res.status(201).send(user);
+		return response.status(201).send(user);
 	}
 
-	static async getMe(req, res) {
-		const { userId } = await userUtils.getUserIdAndKey(req);
+	static async getMe(request, response) {
+		const { userId } = await userUtils.getUserIdAndKey(request);
 
 		const user = await userUtils.getUser({
 			_id: ObjectId(userId),
 		});
 
-		if (!user) return res.status(401).send({ error: 'Unauthorized' });
+		if (!user) return response.status(401).send({ error: 'Unauthorized' });
 
 		const processedUser = { id: user._id, ...user };
 		delete processedUser._id;
 		delete processedUser.password;
 
-		return res.status(200).send(processedUser);
+		return response.status(200).send(processedUser);
 	}
 }
 
