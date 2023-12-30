@@ -22,8 +22,8 @@ class AppController {
 	 */
 	static async getStats(request, response) {
 		const stats = {
-			users: await dbClient.Users(),
-			files: await dbClient.Files(),
+			users: await dbClient.nbUsers(),
+			files: await dbClient.nbFiles(),
 		};
 		response.status(200).send(stats);
 	}
