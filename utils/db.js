@@ -1,52 +1,45 @@
 // utilis/db.js
 
-const { MongoClient } = require('mongodb');
+import { MongoClient } from 'mongodb';
+
+const DB_HOST = process.env.DB_HOST || 'locahost';
+const DB_PORT = process.env.DB_HOST || 27017;
+const DB_DATABASE = process.env.DB_DATABASE || 'files_manager';
+const url = `mongodb://${DB_HOST}:${DB_PORT}`;
+
 
 class DBClient {
-  constructor() {
-    this.host = process.env.DB_HOST || 'localhost';
-    this.port = process.env.DB_PORT || 27017;
-    this.database = process.env.DB_DATABASE || 'files_manager';
-    this.url = `mongodb://${this.host}:${this.port}/${this.database}`;
-    this.client = new MongoClient(this.url, { useNewUrlParser: true, useUnifiedTopology: true });
-    this.isAlive();
-  }
+	constructor() {
+		this.connect();
+	}
 
-  async isAlive() {
-    try {
-      await this.client.connect();
-      console.log('MongoDB connection established');
-      return true;
-    } catch (error) {
-      console.error(`MongoDB connection error: ${error.message}`);
-      return false;
-    }
-  }
+	async connect() {
+		try {
+			const client = await MongoClient.connect(url, { useUnifiedTopology: true });
+			this.db = client.db(DB_DATABASE);
+			this.usersCollection = this.db.collection('users');
+			this.filesCollection = this.db.collection('files');
+		} catch (err) {
+			console.log(err.message);
+			this.db = false;
+		}
+	}
 
-  async nbUsers() {
-    try {
-      const db = this.client.db(this.database);
-      const usersCollection = db.collection('users');
-      const count = await usersCollection.countDocuments();
-      return count;
-    } catch (error) {
-      console.error(`Error counting users: ${error.message}`);
-      return -1;
-    }
-  }
+	isAlive() {
+		return Boolean(this.db);
+	}
 
-  async nbFiles() {
-    try {
-      const db = this.client.db(this.database);
-      const filesCollection = db.collection('files');
-      const count = await filesCollection.countDocuments();
-      return count;
-    } catch (error) {
-      console.error(`Error counting files: ${error.message}`);
-      return -1;
-    }
-  }
+	async nbUsers() {
+		const numberOfUsers = await this.usersCollection.countDocuments();
+		return numberOfUsers;
+	}
+
+	async nbFiles() {
+		const numberOfFiles = await this.filesCollection.countDocuments();
+		return numberOfFiles;
+	}
 }
 
 const dbClient = new DBClient();
-module.exports = dbClient;
+
+export default dbClient;
